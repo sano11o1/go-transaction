@@ -17,5 +17,8 @@ func NewRegisterUserUsecase(userRepository repository.IUserReopsitory) *Register
 
 func (u *RegisterUserUsecase) Execute(user model.User) error {
 	// TODO 実装
+	if err := u.userRepository.AddUser(user); err != nil {
+		return err
+	}
 	return nil
 }

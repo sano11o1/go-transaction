@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:15.2
+    container_name: go_transaction_postgres
+    ports:
+      - 5431:5432
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=passw0rd
+      - TZ=Asia/Tokyo
+      - PGTZ=Asia/Tokyo
+volumes:
+  postgres-data:
