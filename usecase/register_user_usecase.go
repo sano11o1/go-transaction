@@ -1,24 +1,60 @@
 package usecase
 
 import (
-	"github.com/sano11o1/go-transaction/model"
+	"fmt"
+	"net/http"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/sano11o1/go-transaction/entity"
 	"github.com/sano11o1/go-transaction/repository"
 )
 
 type RegisterUserUsecase struct {
-	userRepository repository.IUserReopsitory
+	baseRepository repository.IBaseRepository
 }
 
-func NewRegisterUserUsecase(userRepository repository.IUserReopsitory) *RegisterUserUsecase {
+func NewRegisterUserUsecase(baseRepository repository.IBaseRepository) *RegisterUserUsecase {
 	return &RegisterUserUsecase{
-		userRepository: userRepository,
+		baseRepository: baseRepository,
 	}
 }
 
-func (u *RegisterUserUsecase) Execute(user model.User) error {
-	// TODO 実装
-	if err := u.userRepository.AddUser(user); err != nil {
-		return err
+func (u *RegisterUserUsecase) Execute(user entity.User) error {
+
+	atomicBlock := func(r repository.IBaseRepository) error {
+		// ユーザーを作成
+		userRepo := r.GetUserRepository()
+		if err := userRepo.AddUser(user); err != nil {
+			return err
+		}
+		// ログを作成
+		logRepo := r.GetActivityLogRepository()
+		log := entity.ActivityLog{
+			ID:           uuid.New(),
+			ActivityType: "user_register",
+			CreatedAt:    time.Now(),
+		}
+		if err := logRepo.AddActivityLog(log); err != nil {
+			return err
+		}
+
+		// 外部サービスにUserを作成
+		req, err := http.NewRequest("POST", "https://example.com/user", nil)
+		if err != nil {
+			return err
+		}
+		req.Header.Set("Content-Type", "application/json")
+		client := new(http.Client)
+		_, err = client.Do(req)
+		if err != nil {
+			fmt.Println("failed to create user")
+			// 外部サービスとの通信が失敗した場合ロールバックする
+			return err
+		}
+		fmt.Println("success to create user")
+		return nil
 	}
-	return nil
+	err := u.baseRepository.Atmoic(atomicBlock)
+	return err
 }

@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/sano11o1/go-transaction/model"
+	"github.com/sano11o1/go-transaction/entity"
 	"github.com/sano11o1/go-transaction/repository"
 	"github.com/sano11o1/go-transaction/usecase"
 	"gorm.io/driver/postgres"
@@ -15,9 +15,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	userRepostiry := repository.NewUserRepositoryImpl(db)
-	registerUserUsecase := usecase.NewRegisterUserUsecase(userRepostiry)
-	newUser := model.User{
+	baseRepostiry := repository.NewBaseRepositoryImpl(db)
+	registerUserUsecase := usecase.NewRegisterUserUsecase(baseRepostiry)
+	newUser := entity.User{
 		Name: "sano11o1",
 	}
 	if err := registerUserUsecase.Execute(newUser); err != nil {
