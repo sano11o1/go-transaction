@@ -3,6 +3,7 @@ module github.com/sano11o1/go-transaction
 go 1.20
 
 require (
+	github.com/go-playground/assert/v2 v2.2.0
 	github.com/google/uuid v1.3.0
 	gorm.io/driver/postgres v1.5.2
 	gorm.io/gorm v1.25.1
